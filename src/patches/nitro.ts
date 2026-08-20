@@ -1,10 +1,15 @@
 import { findByProps } from "@vendetta/metro";
 import { instead } from "@vendetta/patcher";
 
-const NitroModule: any = findByProps("canUseAnimatedEmojis");
+// Locate the module by the property we patch (Freemoji's pattern): findByProps
+// guarantees the returned module carries that property, so `instead` lands on
+// a real permission check. The original FreeStickers anchored on
+// canUseAnimatedEmojis and patched a possibly-absent name — a silent no-op
+// when emoji and sticker permissions live on different modules. Legacy name
+// kept as a hedge for older clients.
+const MODERN = "canUseCustomStickersEverywhere";
+const LEGACY = "canUseStickersEverywhere";
+const NitroModule: any = findByProps(MODERN) ?? findByProps(LEGACY);
+const CHECK_NAME = NitroModule?.[MODERN] ? MODERN : LEGACY;
 
-// NOTE: the original FreeStickers fell back to the legacy
-// `canUseStickersEverywhere` name when `canUseCustomStickersEverywhere` was
-// missing. That legacy check no longer exists in current clients, so the
-// fallback was dropped — the current name is always used now.
-export default () => instead("canUseCustomStickersEverywhere", NitroModule, () => true);
+export default () => NitroModule && instead(CHECK_NAME, NitroModule, () => true);
