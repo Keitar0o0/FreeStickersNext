@@ -12,6 +12,9 @@ export const FORMAT_GIF = 4;
 // Swap it for a sticker of your own if it ever stops resolving.
 export const SAMPLE_STICKER_ID = "1216467563744198836";
 
+// Static emoji used for the settings emoji-size preview (Freemoji's sample).
+export const SAMPLE_EMOJI_ID = "926602689213767680";
+
 // Emoji send rewrite (Freemoji feature): sizes the rewritten CDN link serves.
 export const DEFAULT_EMOJI_SIZE = 48;
 export const EMOJI_SIZES = [16, 32, 48, 56, 64, 96, 128] as const;
