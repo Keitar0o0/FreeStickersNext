@@ -7,13 +7,11 @@ declare module "@vendetta" {
   export const isDev: boolean;
 }
 
-// Minimal shim for the automatic JSX runtime — react itself is provided by the
-// host loader, only the types for the runtime import are needed by tsc.
-declare module "react/jsx-runtime" {
-  export function jsx(type: any, props: any, key?: any): any;
-  export function jsxs(type: any, props: any, key?: any): any;
-  export const Fragment: any;
-}
+// Classic JSX runtime — the bundle emits `React.createElement`, and react is
+// provided globally by the host loader; only the type is needed by tsc. This
+// file is a global script (no top-level import/export), so a top-level
+// `declare var` is a global declaration.
+declare var React: any;
 
 declare module "@vendetta/metro" {
   export function findByProps(...props: string[]): any;
