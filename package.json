@@ -1,0 +1,15 @@
+{
+  "name": "freestickers-next",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Use stickers without Nitro, with local APNG-to-GIF encoding.",
+  "scripts": {
+    "build": "bun run build.mjs",
+    "watch": "bun run build.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}
