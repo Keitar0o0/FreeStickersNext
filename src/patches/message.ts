@@ -1,11 +1,8 @@
 import { findByProps, findByStoreName } from "@vendetta/metro";
 import { instead } from "@vendetta/patcher";
-import { storage } from "@vendetta/plugin";
 import { showToast } from "@vendetta/ui/toasts";
 
-import { encodeAPNGToGIF } from "../apng/toGif";
 import { FORMAT_APNG, FORMAT_GIF, FORMAT_LOTTIE } from "../constants";
-import { attachStickerGif } from "../upload";
 import { buildStickerURL, isStickerAvailable, linkify } from "../utils";
 
 const MessageModule: any = findByProps("sendMessage", "receiveMessage");
@@ -53,25 +50,14 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
           sendStickerAsLink(channelId, sticker, extra);
           break;
 
-        case FORMAT_APNG: {
-          if (storage.localEncode) {
-            try {
-              const res = await fetch(url);
-              if (res.ok) {
-                const gif = encodeAPNGToGIF(await res.arrayBuffer());
-                if (gif && (await attachStickerGif(channelId, sticker.id, gif.bytes))) {
-                  showToast("FreeStickersNext: 动画贴纸已转为 GIF,发送消息即可");
-                  break; // attached to the draft — user presses send again
-                }
-              }
-            } catch (e) {
-              console.error("[FreeStickersNext] APNG fetch/encode failed:", e);
-            }
-          }
-          // encoding or attachment failed → fall back to the static PNG link
+        case FORMAT_APNG:
+          // Animated delivery needs a file-upload path (uploadLocalFiles) or a
+          // hosted copy; both are unavailable on this client (uploadLocalFiles
+          // is absent; a data-URI attachment sends an empty message). So APNG
+          // stickers send as the static .png link. The local APNG→GIF pipeline
+          // (apng/toGif.ts) is kept intact for a future delivery path.
           sendStickerAsLink(channelId, sticker, extra);
           break;
-        }
 
         case FORMAT_LOTTIE:
           // Lottie stickers only exist as .json on Discord's CDN — there is no
