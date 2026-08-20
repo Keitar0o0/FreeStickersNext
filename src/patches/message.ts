@@ -19,7 +19,7 @@ const { getStickerById } = findByStoreName("StickersStore");
 
 function sendStickerAsLink(channelId: string, sticker: any, extra: any) {
   const url = buildStickerURL(sticker);
-  MessageModule.sendMessage(channelId, { content: linkify(sticker, url) }, null, extra);
+  MessageModule.sendMessage(channelId, { content: linkify(sticker.name ?? String(sticker.id), url) }, null, extra);
 }
 
 export default () => SendStickersModule && instead("sendStickers", SendStickersModule, (args, orig) => {

@@ -1,4 +1,5 @@
 import boostsPatch from "./patches/boosts";
+import emojiPatch from "./patches/emoji";
 import nitroPatch from "./patches/nitro";
 import messagePatch from "./patches/message";
 import Settings from "./ui/Settings";
@@ -12,6 +13,7 @@ export const onLoad = () => {
     boostsPatch(),
     nitroPatch(),
     messagePatch(),
+    emojiPatch(),
   ];
 };
 

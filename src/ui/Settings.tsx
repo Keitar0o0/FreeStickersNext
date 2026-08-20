@@ -3,7 +3,7 @@ import { storage } from "@vendetta/plugin";
 import { useProxy } from "@vendetta/storage";
 import { Forms, General } from "@vendetta/ui/components";
 
-import { DEFAULT_STICKER_SIZE, SAMPLE_STICKER_ID, STICKER_SIZES, stickerMediaUrl } from "../constants";
+import { DEFAULT_EMOJI_SIZE, DEFAULT_STICKER_SIZE, EMOJI_SIZES, SAMPLE_STICKER_ID, STICKER_SIZES, stickerMediaUrl } from "../constants";
 
 const { Stack, TableRadioGroup, TableRadioRow, TableSwitchRow, TableRowGroup } = findByProps("TableRow", "TableRowGroup");
 const { ScrollView, Image } = General;
@@ -16,6 +16,7 @@ storage.ignoreNitro ??= false;
 storage.customHyperLinkString ??= "";
 storage.localEncode ??= true;
 storage.stickerSize ??= DEFAULT_STICKER_SIZE;
+storage.emojiSize ??= DEFAULT_EMOJI_SIZE;
 
 export default function Settings() {
   useProxy(storage);
@@ -68,6 +69,21 @@ export default function Settings() {
             <TableRadioRow
               label={size.toString()}
               subLabel={size === DEFAULT_STICKER_SIZE ? "Default" : null}
+              key={size.toString()}
+              value={size.toString()}
+            />
+          ))}
+        </TableRadioGroup>
+
+        <TableRadioGroup
+          title="Emoji Size"
+          value={storage.emojiSize.toString()}
+          onChange={v => (storage.emojiSize = parseInt(v))}
+        >
+          {EMOJI_SIZES.map(size => (
+            <TableRadioRow
+              label={size.toString()}
+              subLabel={size === DEFAULT_EMOJI_SIZE ? "Default" : null}
               key={size.toString()}
               value={size.toString()}
             />

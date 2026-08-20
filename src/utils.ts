@@ -31,17 +31,16 @@ export function buildStickerURL(sticker: any): string {
   return stickerMediaUrl(sticker.id, ext, storage.stickerSize ?? 160);
 }
 
-/** Custom hyperlink text: leave empty to use the sticker's name. */
-export function buildLinkText(sticker: any): string {
+/** Custom hyperlink text: leave empty to use the sticker/emoji name. */
+export function buildLinkText(name?: string): string {
   const custom = typeof storage.customHyperLinkString === "string"
     ? storage.customHyperLinkString.trim()
     : "";
-  if (custom) return custom;
-  return sticker.name ?? String(sticker.id);
+  return custom || name || "";
 }
 
-/** Wrap a sticker URL as a markdown link, or return it raw when hyperlinks are off. */
-export function linkify(sticker: any, url: string): string {
+/** Wrap a name + URL as a markdown link, or return the URL raw when hyperlinks are off. */
+export function linkify(name: string, url: string): string {
   if (!storage.hyperlink) return url;
-  return `[${buildLinkText(sticker)}](${url})`;
+  return `[${buildLinkText(name)}](${url})`;
 }
