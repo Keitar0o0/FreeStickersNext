@@ -15,16 +15,15 @@ const { getCurrentUser } = findByStoreName("UserStore");
 // skipped — silent no-op, never a crash.
 const EmojiPermission: any = findByProps("canUseEmojisEverywhere");
 const MessageModule: any = findByProps("sendMessage", "receiveMessage");
-const UploadModule: any = findByProps("uploadLocalFiles");
 
-const EMOJI_RE = /<a?:(\w+):(\d+)>/i;
-const EMOJI_RE_G = /<a?:(\w+):(\d+)>/g;
+// Global regex works for both the .match pre-check and matchAll (rewrite).
+const EMOJI_RE = /<a?:(\w+):(\d+)>/g;
 
 /** Rewrite foreign-guild or animated emojis to CDN image links (Freemoji logic). */
 function rewriteEmojis(content: string): string {
   const size = storage.emojiSize ?? DEFAULT_EMOJI_SIZE;
   let out = content;
-  for (const m of content.matchAll(EMOJI_RE_G)) {
+  for (const m of content.matchAll(EMOJI_RE)) {
     const emoji = getCustomEmojiById(m[2]);
     if (!emoji || (emoji.guildId === getGuildId() && !emoji.animated)) continue;
     out = out.replace(m[0], linkify(m[1], emojiMediaUrl(m[2], m[1], emoji.animated, size)));
@@ -50,9 +49,8 @@ export default () => {
     // Unlock custom + animated emojis everywhere for non-Nitro users.
     EmojiPermission && instead("canUseEmojisEverywhere", EmojiPermission, () => true),
     EmojiPermission && instead("canUseAnimatedEmojis", EmojiPermission, () => true),
-    // Rewrite at the send entry points: text sends + attachment captions.
+    // Rewrite at the text send entry point.
     before("sendMessage", MessageModule, (args) => mutateMessage(args[1])),
-    UploadModule && before("uploadLocalFiles", UploadModule, (args) => mutateMessage(args[0]?.parsedMessage)),
   ].filter(Boolean);
 
   return () => unpatches.forEach((unpatch) => unpatch?.());

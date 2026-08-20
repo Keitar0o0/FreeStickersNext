@@ -2,7 +2,6 @@ export const STICKER_SIZES = [16, 32, 64, 128, 160, 256, 512, 1024] as const;
 export const DEFAULT_STICKER_SIZE = 160;
 
 // Discord Sticker format_type values
-export const FORMAT_PNG = 1;
 export const FORMAT_APNG = 2;
 export const FORMAT_LOTTIE = 3;
 export const FORMAT_GIF = 4;

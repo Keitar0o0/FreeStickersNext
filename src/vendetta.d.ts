@@ -1,11 +1,6 @@
 // Ambient type declarations for the @vendetta/* plugin API (provided by the
 // host loader at runtime, resolved here only so `tsc` can type-check the bundle
 // standalone). These are intentionally loose — match your loader's real types.
-declare module "@vendetta" {
-  export const logger: any;
-  export const version: string;
-  export const isDev: boolean;
-}
 
 // Classic JSX runtime — the bundle emits `React.createElement`, and react is
 // provided globally by the host loader; only the type is needed by tsc. This
