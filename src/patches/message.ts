@@ -9,6 +9,12 @@ import { attachStickerGif } from "../upload";
 import { buildStickerURL, isStickerAvailable, linkify } from "../utils";
 
 const MessageModule: any = findByProps("sendMessage", "receiveMessage");
+// Anchor the interception on the function we patch (Freemoji's pattern):
+// findByProps guarantees the module carries `sendStickers`, so the hook
+// actually fires. The old anchor (the sendMessage module) silently no-ops if
+// the client moved sendStickers to its own module. Link sends below still go
+// through MessageModule.sendMessage.
+const SendStickersModule: any = findByProps("sendStickers") ?? MessageModule;
 const { getStickerById } = findByStoreName("StickersStore");
 
 function sendStickerAsLink(channelId: string, sticker: any, extra: any) {
@@ -16,7 +22,7 @@ function sendStickerAsLink(channelId: string, sticker: any, extra: any) {
   MessageModule.sendMessage(channelId, { content: linkify(sticker, url) }, null, extra);
 }
 
-export default () => instead("sendStickers", MessageModule, (args, orig) => {
+export default () => SendStickersModule && instead("sendStickers", SendStickersModule, (args, orig) => {
   const [channelId, stickerIds, , extra] = args;
   const stickers: any[] = (stickerIds ?? [])
     .map((id: string) => getStickerById(id))
