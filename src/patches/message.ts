@@ -6,7 +6,7 @@ import { showToast } from "@vendetta/ui/toasts";
 
 import { encodeAPNGToGIF } from "../apng/toGif";
 import { FORMAT_APNG, FORMAT_GIF, FORMAT_LOTTIE } from "../constants";
-import { attachStickerGif } from "../upload";
+import { sendStickerGif } from "../upload";
 import { buildStickerURL, hasAttachmentPermission, hasEmbedPermission, isStickerAvailable, linkify } from "../utils";
 
 const MessageModule: any = findByProps("sendMessage", "receiveMessage");
@@ -91,8 +91,8 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
               const gif = encodeAPNGToGIF(await response.arrayBuffer());
               if (!gif) throw new Error("GIF 编码失败");
 
-              await attachStickerGif(channelId, sticker.id, gif.bytes);
-              showToast("FreeStickersNext: GIF 已附加，发送消息即可");
+              await sendStickerGif(channelId, sticker.id, gif.bytes);
+              showToast("FreeStickersNext: GIF 已发送");
               break;
             } catch (e) {
               console.error("[FreeStickersNext] animated sticker delivery failed:", e);

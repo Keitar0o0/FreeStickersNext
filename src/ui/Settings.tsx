@@ -66,7 +66,7 @@ export default function Settings() {
         <TableRowGroup title="Animated Stickers">
           <TableSwitchRow
             label="Convert APNG stickers to GIF"
-            subLabel="Encoded on-device (no third-party service) and attached to your message draft"
+            subLabel="Encoded on-device and sent directly to Discord"
             value={storage.localEncode}
             onValueChange={v => (storage.localEncode = v)}
           />
@@ -74,7 +74,7 @@ export default function Settings() {
 
         <HelpMessage messageType={0}>
           {
-            "Stickers are sent as plain links (or as attachments for animated APNG stickers). GIF stickers are served animated by Discord's own media proxy. Size only changes the source resolution — Discord renders link embeds at a fixed display size."
+            "Stickers are sent as plain links (or direct GIF uploads for animated APNG stickers). GIF stickers are served animated by Discord's own media proxy. Size only changes the source resolution — Discord renders link embeds at a fixed display size."
           }
         </HelpMessage>
 
