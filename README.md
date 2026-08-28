@@ -34,9 +34,9 @@ Use Discord stickers without Nitro.
   `.json` (no PNG/GIF route), so a "link" would be a broken 404 message. A toast
   explains this when you try to send one.
 - **`uploadLocalFiles` attachment signature**: the exact call shape differs
-  between client builds. `src/upload.ts` probes the known shapes and falls back
-  to a static PNG link on failure. **Verify on-device** once and adjust the
-  probe order if needed (watch the console debug logs).
+  between client builds. `src/upload.ts` writes the GIF to Revenge's native
+  cache, probes the known upload shapes, and falls back to a static PNG link on
+  failure. **Verify on-device** once and check the console logs if it falls back.
 - APNG conversion runs on the JS thread; very large stickers may take a moment
   (a "converting…" toast is shown).
 

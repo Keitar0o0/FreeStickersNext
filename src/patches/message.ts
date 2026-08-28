@@ -1,9 +1,13 @@
 import { findByProps, findByStoreName } from "@vendetta/metro";
 import { instead } from "@vendetta/patcher";
+import { storage } from "@vendetta/plugin";
+import { showConfirmationAlert } from "@vendetta/ui/alerts";
 import { showToast } from "@vendetta/ui/toasts";
 
+import { encodeAPNGToGIF } from "../apng/toGif";
 import { FORMAT_APNG, FORMAT_GIF, FORMAT_LOTTIE } from "../constants";
-import { buildStickerURL, isStickerAvailable, linkify } from "../utils";
+import { attachStickerGif } from "../upload";
+import { buildStickerURL, hasAttachmentPermission, hasEmbedPermission, isStickerAvailable, linkify } from "../utils";
 
 const MessageModule: any = findByProps("sendMessage", "receiveMessage");
 // Anchor the interception on the function we patch (Freemoji's pattern):
@@ -17,6 +21,25 @@ const { getStickerById } = findByStoreName("StickersStore");
 function sendStickerAsLink(channelId: string, sticker: any, extra: any) {
   const url = buildStickerURL(sticker);
   MessageModule.sendMessage(channelId, { content: linkify(sticker.name ?? String(sticker.id), url) }, null, extra);
+}
+
+function confirmLinkSend(): Promise<boolean> {
+  return new Promise(resolve => {
+    try {
+      showConfirmationAlert({
+        title: "缺少嵌入链接权限",
+        content: "当前频道会把贴纸或表情显示为普通链接，仍要发送吗",
+        confirmText: "继续发送",
+        cancelText: "取消",
+        isDismissable: false,
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    } catch (e) {
+      console.warn("[FreeStickersNext] embed permission prompt failed:", e);
+      resolve(true);
+    }
+  });
 }
 
 export default () => SendStickersModule && instead("sendStickers", SendStickersModule, (args, orig) => {
@@ -33,13 +56,21 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
   const usable = stickers.filter((s: any) => isStickerAvailable(s, channelId));
   if (usable.length) {
     try {
-      orig(channelId, usable.map((s: any) => s.id), args[2], extra);
+      Promise.resolve(orig(channelId, usable.map((s: any) => s.id), args[2], extra))
+        .catch(e => console.error("[FreeStickersNext] native send of usable stickers failed:", e));
     } catch (e) {
       console.error("[FreeStickersNext] native send of usable stickers failed:", e);
     }
   }
 
   (async () => {
+    let linkPermission: Promise<boolean> | null = null;
+    const sendLink = async (sticker: any) => {
+      if (!hasEmbedPermission(channelId)) linkPermission ??= confirmLinkSend();
+      if (linkPermission && !await linkPermission) return;
+      sendStickerAsLink(channelId, sticker, extra);
+    };
+
     for (const sticker of toModify) {
       const url = buildStickerURL(sticker);
 
@@ -47,17 +78,34 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
         case FORMAT_GIF:
           // GIF stickers are served natively animated by Discord's media proxy —
           // plain CDN link, zero conversion, no third party.
-          sendStickerAsLink(channelId, sticker, extra);
+          await sendLink(sticker);
           break;
 
-        case FORMAT_APNG:
-          // Animated delivery needs a file-upload path (uploadLocalFiles) or a
-          // hosted copy; both are unavailable on this client (uploadLocalFiles
-          // is absent; a data-URI attachment sends an empty message). So APNG
-          // stickers send as the static .png link. The local APNG→GIF pipeline
-          // (apng/toGif.ts) is kept intact for a future delivery path.
-          sendStickerAsLink(channelId, sticker, extra);
+        case FORMAT_APNG: {
+          let attemptedUpload = false;
+          if (storage.localEncode && hasAttachmentPermission(channelId)) {
+            attemptedUpload = true;
+            showToast("FreeStickersNext: 正在转换动画贴纸");
+            try {
+              const response = await fetch(url);
+              if (!response.ok) throw new Error(`APNG fetch failed: ${response.status}`);
+
+              const gif = encodeAPNGToGIF(await response.arrayBuffer());
+              if (gif && await attachStickerGif(channelId, sticker.id, gif.bytes)) {
+                showToast("FreeStickersNext: GIF 已附加，发送消息即可");
+                break;
+              }
+            } catch (e) {
+              console.error("[FreeStickersNext] APNG fetch/encode failed:", e);
+            }
+          } else if (storage.localEncode) {
+            showToast("FreeStickersNext: 当前频道缺少附件权限，改发静态贴纸");
+          }
+
+          if (attemptedUpload) showToast("FreeStickersNext: GIF 附加失败，改发静态贴纸");
+          await sendLink(sticker);
           break;
+        }
 
         case FORMAT_LOTTIE:
           // Lottie stickers only exist as .json on Discord's CDN — there is no
@@ -67,8 +115,8 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
           break;
 
         default: // PNG and unknown formats
-          sendStickerAsLink(channelId, sticker, extra);
+          await sendLink(sticker);
       }
     }
-  })();
+  })().catch(e => console.error("[FreeStickersNext] sticker rewrite failed:", e));
 });

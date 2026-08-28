@@ -15,6 +15,10 @@ declare module "@vendetta/metro" {
   export function findByDisplayName(name: string): any;
 }
 
+declare module "@vendetta/metro/common" {
+  export const constants: any;
+}
+
 declare module "@vendetta/patcher" {
   export function before(name: string, module: any, callback: (args: any[]) => void): () => void;
   export function instead(
@@ -40,4 +44,8 @@ declare module "@vendetta/ui/components" {
 
 declare module "@vendetta/ui/toasts" {
   export function showToast(content: string): void;
+}
+
+declare module "@vendetta/ui/alerts" {
+  export function showConfirmationAlert(options: any): void;
 }
