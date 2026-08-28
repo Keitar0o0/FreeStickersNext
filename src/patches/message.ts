@@ -82,27 +82,26 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
           break;
 
         case FORMAT_APNG: {
-          let attemptedUpload = false;
           if (storage.localEncode && hasAttachmentPermission(channelId)) {
-            attemptedUpload = true;
             showToast("FreeStickersNext: 正在转换动画贴纸");
             try {
               const response = await fetch(url);
               if (!response.ok) throw new Error(`APNG fetch failed: ${response.status}`);
 
               const gif = encodeAPNGToGIF(await response.arrayBuffer());
-              if (gif && await attachStickerGif(channelId, sticker.id, gif.bytes)) {
-                showToast("FreeStickersNext: GIF 已附加，发送消息即可");
-                break;
-              }
+              if (!gif) throw new Error("GIF 编码失败");
+
+              await attachStickerGif(channelId, sticker.id, gif.bytes);
+              showToast("FreeStickersNext: GIF 已附加，发送消息即可");
+              break;
             } catch (e) {
-              console.error("[FreeStickersNext] APNG fetch/encode failed:", e);
+              console.error("[FreeStickersNext] animated sticker delivery failed:", e);
+              showToast(`FreeStickersNext: ${e instanceof Error ? e.message : String(e)}`);
             }
           } else if (storage.localEncode) {
             showToast("FreeStickersNext: 当前频道缺少附件权限，改发静态贴纸");
           }
 
-          if (attemptedUpload) showToast("FreeStickersNext: GIF 附加失败，改发静态贴纸");
           await sendLink(sticker);
           break;
         }

@@ -1,4 +1,4 @@
-import { findByProps } from "@vendetta/metro";
+import { findByProps, findByStoreName } from "@vendetta/metro";
 
 import { bytesToBase64 } from "./apng/toGif";
 
@@ -12,41 +12,12 @@ interface LocalFile {
 
 const nativeModules = (globalThis as any).nativeModuleProxy;
 const FileManager = nativeModules?.DCDFileManager ?? nativeModules?.RTNFileManager;
+const { getChannel } = findByStoreName("ChannelStore");
 
-function getUploader(): ((...args: any[]) => unknown) | null {
-  try {
-    const mod: any = findByProps("uploadLocalFiles");
-    if (typeof mod === "function") return mod;
-    if (typeof mod?.uploadLocalFiles === "function") return mod.uploadLocalFiles.bind(mod);
-  } catch (e) {
-    console.warn("[FreeStickersNext] uploadLocalFiles lookup failed:", e);
-  }
+function getPromptToUpload(): ((files: LocalFile[], channel: any, draftType: number) => unknown) | null {
+  const mod: any = findByProps("promptToUpload");
+  if (typeof mod?.promptToUpload === "function") return mod.promptToUpload.bind(mod);
   return null;
-}
-
-async function callUploader(fn: (...args: any[]) => unknown, channelId: string, file: LocalFile): Promise<void> {
-  const attempts = fn.length >= 2
-    ? [
-      () => fn([file], channelId),
-      () => fn({ parsedMessage: { content: "" }, channelId }, [file]),
-    ]
-    : [
-      () => fn([file]),
-      () => fn(file),
-    ];
-
-  let lastError: unknown;
-  for (const attempt of attempts) {
-    try {
-      await Promise.resolve(attempt());
-      return;
-    } catch (e) {
-      lastError = e;
-      console.debug("[FreeStickersNext] upload signature rejected:", e);
-    }
-  }
-
-  throw lastError ?? new Error("uploadLocalFiles rejected all supported signatures");
 }
 
 function removeCachedFile(relativePath: string) {
@@ -62,9 +33,12 @@ export async function attachStickerGif(
   channelId: string,
   stickerId: string,
   bytes: Uint8Array,
-): Promise<boolean> {
-  const uploader = getUploader();
-  if (!uploader || !FileManager?.writeFile) return false;
+): Promise<void> {
+  const promptToUpload = getPromptToUpload();
+  const channel = getChannel?.(channelId);
+  if (!promptToUpload) throw new Error("promptToUpload 不可用");
+  if (!channel) throw new Error("当前频道不可用");
+  if (!FileManager?.writeFile) throw new Error("FileManager 不可用");
 
   const relativePath = `freestickers-next/${stickerId}-${Date.now()}.gif`;
 
@@ -78,14 +52,12 @@ export async function attachStickerGif(
       size: bytes.byteLength,
     };
 
-    await callUploader(uploader, channelId, file);
+    await Promise.resolve(promptToUpload([file], channel, 0));
 
     // Keep the file available while it remains attached to the draft
     setTimeout(() => removeCachedFile(relativePath), 30 * 60 * 1000);
-    return true;
   } catch (e) {
-    console.warn("[FreeStickersNext] GIF attachment failed:", e);
     removeCachedFile(relativePath);
-    return false;
+    throw e;
   }
 }
