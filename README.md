@@ -32,9 +32,9 @@ Use Discord stickers without Nitro.
 - **Lottie stickers (format_type 3)** are not sent: Discord only exposes them as
   `.json` (no PNG/GIF route), so a "link" would be a broken 404 message. A toast
   explains this when you try to send one.
-- **APNG delivery**: `src/upload.ts` writes the GIF to Revenge's native cache
-  and sends a multipart attachment directly to Discord. It falls back to a
-  static PNG link when Discord rejects the upload.
+- **APNG delivery**: `src/upload.ts` wraps the GIF bytes in React Native's
+  standard `Blob` and sends a multipart attachment directly to Discord. It
+  falls back to a static PNG link when Discord rejects the upload.
 - APNG conversion runs on the JS thread; very large stickers may take a moment
   (a "converting…" toast is shown).
 

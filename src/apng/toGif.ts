@@ -62,21 +62,3 @@ export function encodeAPNGToGIF(buffer: ArrayBuffer): EncodedGif | null {
     return null;
   }
 }
-
-// Self-contained base64 encoder (avoids relying on `btoa`, which is not
-// guaranteed on every RN/Hermes runtime).
-const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-export function bytesToBase64(bytes: Uint8Array): string {
-  let out = "";
-  for (let i = 0; i < bytes.length; i += 3) {
-    const a = bytes[i];
-    const b = bytes[i + 1];
-    const c = bytes[i + 2];
-    out += B64[a >> 2];
-    out += B64[((a & 3) << 4) | ((b ?? 0) >> 4)];
-    out += i + 1 < bytes.length ? B64[((b & 15) << 2) | ((c ?? 0) >> 6)] : "=";
-    out += i + 2 < bytes.length ? B64[c & 63] : "=";
-  }
-  return out;
-}
