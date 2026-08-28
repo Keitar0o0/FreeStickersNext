@@ -1,47 +1,77 @@
+<div align="center">
+
 # FreeStickersNext
 
-Use Discord stickers without Nitro.
+Use Discord stickers and custom emojis **without Nitro**
+
+[English](README.md) · [中文](README.zh_CN.md)
+
+</div>
 
 ## Features
 
-- **PNG / GIF stickers** — sent as links served by Discord's **own** media proxy
-  (`media.discordapp.net`). GIF stickers (format_type 4) are animated right in
-  chat, with zero conversion.
-- **APNG stickers** — **encoded to GIF locally** (`upng-js` decoder + `gifenc`
-  encoder, both pure JS; no DOM canvas needed under React Native), then sent
-  directly to Discord as an attachment. No third-party service or external
-  hosting is involved.
-- **Custom hyperlink text** — Leave the setting empty to use
-  the sticker's name, or type your own link label.
-- **Size preview** — the settings page renders a sample sticker at the
-  configured size, using the exact URL the plugin would send.
-- Removed the legacy `canUseStickersEverywhere` fallback (old clients).
+- **Custom emojis** — unlocked, restricted static/animated emojis are rewritten to Discord CDN links.
+- **PNG / GIF stickers** — sent as hyperlinks.
+- **APNG stickers** — **encoded to GIF locally** (`upng-js` decoder + `gifenc` encoder), then sent directly to Discord as an attachment.
 
-## Settings
+Content type handling:
 
-| Setting | Default | Notes |
-| --- | --- | --- |
-| Hyperlink stickers | on | wrap the URL in `[text](url)` |
-| Ignore Nitro | off | force the rewrite even when you have Nitro |
-| Custom hyperlink text | empty | empty = use the sticker's name |
-| Convert APNG stickers to GIF | on | local encoding, sent as GIF |
-| Sticker Size | 160 | 16 … 1024 |
+| Content | Handling |
+| --- | --- |
+| Stickers usable in the current channel | passed through to Discord's native send logic |
+| PNG stickers / GIF stickers | sent as a `media.discordapp.net` link |
+| APNG stickers | converted to GIF on-device and sent as an attachment; falls back to a static PNG link on failure |
+| Lottie stickers | toast notification, not sent |
+| Emojis usable in the current channel | kept as-is |
+| Restricted static/animated emojis | rewritten to a Discord CDN link |
+| Boost-locked stickers | marked sendable in the sticker picker |
+
+## Installation
+
+The plugin is built for [Revenge](https://github.com/revenge-mod) loaders that support plugins.
+
+**Via plugin source (recommended)** — add the GitHub Pages source in the plugin browser:
+
+```
+https://Keitar0o0.github.io/FreeStickersNext
+```
+
+**Manual** — build the plugin yourself (see below) and load `dist/index.js` from the plugin browser, or host `dist/` (it contains `index.js` + `manifest.json` with a hash, i.e. a complete plugin).
 
 ## Known limitations
 
-- **Lottie stickers (format_type 3)** are not sent: Discord only exposes them as
-  `.json` (no PNG/GIF route), so a "link" would be a broken 404 message. A toast
-  explains this when you try to send one.
-- **APNG delivery**: `src/upload.ts` resolves Revenge's TurboModule or legacy
-  file bridge, writes the GIF to native cache, and sends it directly to Discord
-  as a multipart attachment. It falls back to a static PNG link when Discord
-  rejects the upload.
-- APNG conversion runs on the JS thread; very large stickers may take a moment
-  (a "converting…" toast is shown).
+- **Lottie stickers (format_type 3)** are not sent: Discord only exposes them as `.json` (no PNG/GIF route), so a link would be a broken 404 message. A toast explains this when you try to send one.
+- **APNG delivery** — `src/upload.ts` resolves Revenge's TurboModule or legacy file bridge, writes the GIF to the native cache, and sends it to Discord as a multipart attachment. If Discord rejects the upload, it falls back to a static PNG link.
+- **APNG conversion runs on the JS thread**; very large stickers may take a moment (a "converting…" toast is shown).
+- **Embed permission** — links render as plain text in channels without the *Embed Links* permission; a confirmation prompt asks before sending in that case.
+
+## Building from source
+
+Requirements: [Bun](https://bun.sh)
+
+```sh
+bun install        # only devDependencies; APNG/GIF code is bundled in src/apng
+bun run build      # bundle to dist/index.js
+bun run watch      # rebuild on change
+bun run typecheck  # tsc --noEmit
+```
+
+Build output:
+
+| File | Purpose |
+| --- | --- |
+| `dist/index.js` | single-file plugin bundle loaded by Vendetta/Revenge |
+| `dist/manifest.json` | release manifest, contains the bundle hash |
+| `dist/source.json` | plugin source index (only when built with a base URL) |
 
 ## Credits
 
-- [FreeStickers](https://github.com/aliernfrog/vd-plugins/tree/main/plugins/FreeStickers)
-- [freemoji](https://github.com/Rico040/bunny-plugins/tree/gh-pages/freemoji)
-- [upng-js](https://github.com/photopea/UPNG.js)
-- [gifenc](https://github.com/mattdesl/gifenc)
+- [Revenge](https://github.com/revenge-mod) —— Plugin Loader
+- [FreeStickers](https://github.com/aliernfrog/vd-plugins/tree/main/plugins/FreeStickers) — original sticker plugin
+- [freemoji](https://github.com/Rico040/bunny-plugins/tree/gh-pages/freemoji) — emoji unlock & CDN rewrite
+- [upng-js](https://github.com/photopea/UPNG.js) — APNG decoder
+- [gifenc](https://github.com/mattdesl/gifenc) — GIF encoder
+
+## License
+
+[GPL-3.0](LICENSE)
