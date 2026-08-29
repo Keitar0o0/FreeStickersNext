@@ -5,7 +5,7 @@ import { showConfirmationAlert } from "@vendetta/ui/alerts";
 import { showToast } from "@vendetta/ui/toasts";
 
 import { encodeAPNGToGIF } from "../apng/toGif";
-import { FORMAT_APNG, FORMAT_GIF, FORMAT_LOTTIE } from "../constants";
+import { FORMAT_APNG, FORMAT_LOTTIE } from "../constants";
 import { sendStickerGif } from "../upload";
 import { buildStickerURL, hasAttachmentPermission, hasEmbedPermission, isStickerAvailable, linkify } from "../utils";
 
@@ -17,11 +17,6 @@ const MessageModule: any = findByProps("sendMessage", "receiveMessage");
 // through MessageModule.sendMessage.
 const SendStickersModule: any = findByProps("sendStickers") ?? MessageModule;
 const { getStickerById } = findByStoreName("StickersStore");
-
-function sendStickerAsLink(channelId: string, sticker: any, extra: any) {
-  const url = buildStickerURL(sticker);
-  MessageModule.sendMessage(channelId, { content: linkify(sticker.name ?? String(sticker.id), url) }, null, extra);
-}
 
 function confirmLinkSend(): Promise<boolean> {
   return new Promise(resolve => {
@@ -68,24 +63,17 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
     const sendLink = async (sticker: any) => {
       if (!hasEmbedPermission(channelId)) linkPermission ??= confirmLinkSend();
       if (linkPermission && !await linkPermission) return;
-      sendStickerAsLink(channelId, sticker, extra);
+      const url = buildStickerURL(sticker);
+      MessageModule.sendMessage(channelId, { content: linkify(sticker.name ?? String(sticker.id), url) }, null, extra);
     };
 
     for (const sticker of toModify) {
-      const url = buildStickerURL(sticker);
-
       switch (sticker.format_type) {
-        case FORMAT_GIF:
-          // GIF stickers are served natively animated by Discord's media proxy —
-          // plain CDN link, zero conversion, no third party.
-          await sendLink(sticker);
-          break;
-
         case FORMAT_APNG: {
           if (storage.localEncode && hasAttachmentPermission(channelId)) {
             showToast("FreeStickersNext: 正在转换动画贴纸");
             try {
-              const response = await fetch(url);
+              const response = await fetch(buildStickerURL(sticker));
               if (!response.ok) throw new Error(`APNG fetch failed: ${response.status}`);
 
               const gif = encodeAPNGToGIF(await response.arrayBuffer());
@@ -113,7 +101,7 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
           showToast("FreeStickersNext: Lottie 动画贴纸暂不支持发送");
           break;
 
-        default: // PNG and unknown formats
+        default: // PNG, GIF and unknown formats
           await sendLink(sticker);
       }
     }

@@ -12,7 +12,6 @@ declare module "@vendetta/metro" {
   export function findByProps(...props: string[]): any;
   export function findByStoreName(name: string): any;
   export function findByName(name: string): any;
-  export function findByDisplayName(name: string): any;
 }
 
 declare module "@vendetta/metro/common" {
@@ -26,7 +25,6 @@ declare module "@vendetta/patcher" {
     module: any,
     callback: (args: any[], original: (...args: any[]) => any) => any,
   ): () => void;
-  export function after(name: string, module: any, callback: (args: any[], res: any) => any): () => void;
 }
 
 declare module "@vendetta/plugin" {

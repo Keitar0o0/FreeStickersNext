@@ -8,10 +8,7 @@ const watch = process.argv.includes("--watch");
 
 // Public base URL of the published plugin, e.g. https://<user>.github.io/FreeStickersNext
 // (needed to emit dist/source.json; dist/ is served as the site root)
-const baseArg = process.argv.find((arg) => arg.startsWith("--base="));
-const baseUrl = baseArg
-  ? baseArg.slice("--base=".length)
-  : process.env.PLUGIN_BASE_URL;
+const baseUrl = process.argv.find((arg) => arg.startsWith("--base="))?.slice("--base=".length);
 
 // Vendetta evaluates plugin bundles as `vendetta => ${bundle}`, injecting a
 // single `vendetta` global. Two adaptations are needed:
@@ -76,7 +73,7 @@ const publish = {
       };
       await writeFile("dist/manifest.json", JSON.stringify(manifest, null, 2));
 
-      // Marketplace entry (`--base=<url>` or PLUGIN_BASE_URL), for adding dist/
+      // Marketplace entry (`--base=<url>`), for adding dist/
       // as a plugin source in the client.
       if (baseUrl) {
         const pkg = JSON.parse(await readFile("package.json", "utf-8"));

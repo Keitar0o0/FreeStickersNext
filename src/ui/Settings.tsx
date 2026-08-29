@@ -6,8 +6,8 @@ import { Forms, General } from "@vendetta/ui/components";
 import { DEFAULT_EMOJI_SIZE, DEFAULT_STICKER_SIZE, EMOJI_SIZES, SAMPLE_EMOJI_ID, SAMPLE_STICKER_ID, STICKER_SIZES, emojiMediaUrl, stickerMediaUrl } from "../constants";
 
 const { Stack, TableRadioGroup, TableRadioRow, TableSwitchRow, TableRowGroup } = findByProps("TableRow", "TableRowGroup");
-const { ScrollView, Image, Text } = General;
-const { FormRow, FormSection } = Forms;
+const { ScrollView, Image } = General;
+const { FormRow, FormSection, FormText } = Forms;
 const HelpMessage = findByName("HelpMessage");
 
 // Settings defaults (evaluated once when the module is imported, i.e. at
@@ -53,13 +53,12 @@ export default function Settings() {
         </TableRowGroup>
 
         <FormSection>
-          <FormRow label="Custom hyperlink text" />
           <Forms.FormInput
-            title=""
+            title="CUSTOM HYPERLINK TEXT"
             placeholder="Leave empty to use the sticker's name"
             value={storage.customHyperLinkString}
             onChange={v => (storage.customHyperLinkString = v)}
-            style={{ marginTop: -25, marginHorizontal: 12 }}
+            style={{ marginHorizontal: 12 }}
           />
         </FormSection>
 
@@ -80,7 +79,7 @@ export default function Settings() {
 
         <FormRow
           label="Emoji Size"
-          trailing={<Text style={{ opacity: 0.6 }}>{emojiSize}</Text>}
+          trailing={<FormText style={{ opacity: 0.6 }}>{emojiSize}</FormText>}
           arrow
           onPress={() => setOpenPicker(openPicker === "emoji" ? null : "emoji")}
         />
@@ -112,7 +111,7 @@ export default function Settings() {
 
         <FormRow
           label="Sticker Size"
-          trailing={<Text style={{ opacity: 0.6 }}>{size}</Text>}
+          trailing={<FormText style={{ opacity: 0.6 }}>{size}</FormText>}
           arrow
           onPress={() => setOpenPicker(openPicker === "sticker" ? null : "sticker")}
         />
