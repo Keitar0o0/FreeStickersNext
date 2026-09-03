@@ -1,5 +1,7 @@
 import { findByStoreName } from "@vendetta/metro";
 
+import { t } from "./i18n";
+
 interface FileManager {
   writeFile(storage: "cache", path: string, data: string, encoding: "base64"): Promise<string>;
   removeFile?(storage: "cache", path: string): Promise<unknown>;
@@ -53,8 +55,8 @@ export async function sendStickerGif(
   bytes: Uint8Array,
 ): Promise<void> {
   const token = getToken?.();
-  if (!token) throw new Error("AuthenticationStore 不可用");
-  if (!FileManager) throw new Error("NativeFileModule 不可用");
+  if (!token) throw new Error(t("AuthenticationStore 不可用", "AuthenticationStore unavailable"));
+  if (!FileManager) throw new Error(t("NativeFileModule 不可用", "NativeFileModule unavailable"));
 
   const filename = `${stickerId}.gif`;
   const relativePath = `freestickers-next/${stickerId}-${Date.now()}.gif`;
