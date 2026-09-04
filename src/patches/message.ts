@@ -72,23 +72,23 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
       switch (sticker.format_type) {
         case FORMAT_APNG: {
           if (storage.localEncode && hasAttachmentPermission(channelId)) {
-            showToast(`FreeStickersNext: ${t("正在转换动画贴纸", "Converting animated sticker")}`);
+            showToast(`FreeStickersNext: ${t("toast.convertingSticker")}`);
             try {
               const response = await fetch(buildStickerURL(sticker));
-              if (!response.ok) throw new Error(`${t("APNG 下载失败", "APNG download failed")}: ${response.status}`);
+              if (!response.ok) throw new Error(`${t("error.apngDownload")}: ${response.status}`);
 
               const gif = encodeAPNGToGIF(await response.arrayBuffer());
-              if (!gif) throw new Error(t("GIF 编码失败", "GIF encoding failed"));
+              if (!gif) throw new Error(t("error.gifEncoding"));
 
               await sendStickerGif(channelId, sticker.id, gif.bytes);
-              showToast(`FreeStickersNext: ${t("GIF 已发送", "GIF sent")}`);
+              showToast(`FreeStickersNext: ${t("toast.gifSent")}`);
               break;
             } catch (e) {
               console.error("[FreeStickersNext] animated sticker delivery failed:", e);
               showToast(`FreeStickersNext: ${e instanceof Error ? e.message : String(e)}`);
             }
           } else if (storage.localEncode) {
-            showToast(`FreeStickersNext: ${t("当前频道缺少附件权限，改发静态贴纸", "Missing attachment permission in this channel; sending a static sticker instead")}`);
+            showToast(`FreeStickersNext: ${t("toast.missingAttachmentPermission")}`);
           }
 
           await sendLink(sticker);
@@ -99,7 +99,7 @@ export default () => SendStickersModule && instead("sendStickers", SendStickersM
           // Lottie stickers only exist as .json on Discord's CDN — there is no
           // static PNG or GIF route (verified), so there is nothing to send.
           // Sending the old .png link would produce a broken 404 message.
-          showToast(`FreeStickersNext: ${t("Lottie 动画贴纸暂不支持发送", "Sending Lottie animated stickers is not supported yet")}`);
+          showToast(`FreeStickersNext: ${t("toast.lottieUnsupported")}`);
           break;
 
         default: // PNG, GIF and unknown formats

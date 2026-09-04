@@ -1,10 +1,13 @@
 import { findByStoreName } from "@vendetta/metro";
 
-export function t(zh: string, en: string): string {
+import en from "./locales/en.json";
+import zh from "./locales/zh-CN.json";
+
+export function t(key: keyof typeof en): string {
   try {
     const store = findByStoreName("LocaleStore");
     const locale = typeof store?.getLocale === "function" ? store.getLocale() : store?.locale;
-    if (typeof locale === "string" && /^zh(?:[-_]|$)/i.test(locale.trim())) return zh;
+    if (typeof locale === "string" && /^zh(?:[-_]|$)/i.test(locale.trim())) return zh[key];
   } catch {}
-  return en;
+  return en[key];
 }

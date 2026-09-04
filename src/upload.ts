@@ -55,8 +55,8 @@ export async function sendStickerGif(
   bytes: Uint8Array,
 ): Promise<void> {
   const token = getToken?.();
-  if (!token) throw new Error(t("AuthenticationStore 不可用", "AuthenticationStore unavailable"));
-  if (!FileManager) throw new Error(t("NativeFileModule 不可用", "NativeFileModule unavailable"));
+  if (!token) throw new Error(t("error.authenticationUnavailable"));
+  if (!FileManager) throw new Error(t("error.fileModuleUnavailable"));
 
   const filename = `${stickerId}.gif`;
   const relativePath = `freestickers-next/${stickerId}-${Date.now()}.gif`;

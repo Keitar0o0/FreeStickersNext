@@ -7,6 +7,7 @@
   "scripts": {
     "build": "bun run build.mjs",
     "watch": "bun run build.mjs --watch",
+    "serve": "bun run serve.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
