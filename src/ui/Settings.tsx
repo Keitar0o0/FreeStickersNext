@@ -4,6 +4,7 @@ import { useProxy } from "@vendetta/storage";
 import { Forms, General } from "@vendetta/ui/components";
 
 import { DEFAULT_EMOJI_SIZE, DEFAULT_STICKER_SIZE, EMOJI_SIZES, SAMPLE_EMOJI_ID, SAMPLE_STICKER_ID, STICKER_SIZES, emojiMediaUrl, stickerMediaUrl } from "../constants";
+import { t } from "../i18n";
 
 const { Stack, TableRadioGroup, TableRadioRow, TableSwitchRow, TableRowGroup } = findByProps("TableRow", "TableRowGroup");
 const { ScrollView, Image } = General;
@@ -38,15 +39,15 @@ export default function Settings() {
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 38 }}>
       <Stack style={{ paddingVertical: 24, paddingHorizontal: 12 }} spacing={24}>
-        <TableRowGroup title="General">
+        <TableRowGroup title={t("通用", "General")}>
           <TableSwitchRow
-            label="Hyperlink stickers"
+            label={t("以超链接发送贴纸", "Hyperlink stickers")}
             value={storage.hyperlink}
             onValueChange={v => (storage.hyperlink = v)}
           />
           <TableSwitchRow
-            label="Ignore Nitro"
-            subLabel="Force FreeStickersNext even when you have Nitro"
+            label={t("忽略 Nitro", "Ignore Nitro")}
+            subLabel={t("即使拥有 Nitro，也使用 FreeStickersNext 发送", "Force FreeStickersNext even when you have Nitro")}
             value={storage.ignoreNitro}
             onValueChange={v => (storage.ignoreNitro = v)}
           />
@@ -54,38 +55,39 @@ export default function Settings() {
 
         <FormSection>
           <Forms.FormInput
-            title="CUSTOM HYPERLINK TEXT"
-            placeholder="Leave empty to use the sticker's name"
+            title={t("自定义超链接文本", "CUSTOM HYPERLINK TEXT")}
+            placeholder={t("留空时使用贴纸名称", "Leave empty to use the sticker's name")}
             value={storage.customHyperLinkString}
             onChange={v => (storage.customHyperLinkString = v)}
             style={{ marginHorizontal: 12 }}
           />
         </FormSection>
 
-        <TableRowGroup title="Animated Stickers">
+        <TableRowGroup title={t("动画贴纸", "Animated Stickers")}>
           <TableSwitchRow
-            label="Convert APNG stickers to GIF"
-            subLabel="Encoded on-device and sent directly to Discord"
+            label={t("将 APNG 贴纸转换为 GIF", "Convert APNG stickers to GIF")}
+            subLabel={t("在设备上编码并直接发送到 Discord", "Encoded on-device and sent directly to Discord")}
             value={storage.localEncode}
             onValueChange={v => (storage.localEncode = v)}
           />
         </TableRowGroup>
 
         <HelpMessage messageType={0}>
-          {
+          {t(
+            "贴纸以链接形式发送，APNG 动画贴纸可转换为 GIF 后直接上传。GIF 贴纸由 Discord 媒体代理提供动画。尺寸设置仅调整原图分辨率，Discord 中的链接预览采用固定显示尺寸",
             "Stickers are sent as plain links (or direct GIF uploads for animated APNG stickers). GIF stickers are served animated by Discord's own media proxy. Size only changes the source resolution — Discord renders link embeds at a fixed display size."
-          }
+          )}
         </HelpMessage>
 
         <FormRow
-          label="Emoji Size"
+          label={t("表情尺寸", "Emoji Size")}
           trailing={<FormText style={{ opacity: 0.6 }}>{emojiSize}</FormText>}
           arrow
           onPress={() => setOpenPicker(openPicker === "emoji" ? null : "emoji")}
         />
         {openPicker === "emoji" && (
           <TableRadioGroup
-            title="Emoji Size"
+            title={t("表情尺寸", "Emoji Size")}
             value={emojiSize.toString()}
             onChange={v => {
               storage.emojiSize = parseInt(v);
@@ -95,14 +97,14 @@ export default function Settings() {
             {EMOJI_SIZES.map(size => (
               <TableRadioRow
                 label={size.toString()}
-                subLabel={size === DEFAULT_EMOJI_SIZE ? "Default" : null}
+                subLabel={size === DEFAULT_EMOJI_SIZE ? t("默认", "Default") : null}
                 key={size.toString()}
                 value={size.toString()}
               />
             ))}
           </TableRadioGroup>
         )}
-        <TableRowGroup title="Emoji Preview">
+        <TableRowGroup title={t("表情预览", "Emoji Preview")}>
           <Image
             source={{ uri: emojiSampleUrl }}
             style={{ width: emojiSize, height: emojiSize, borderRadius: 8, alignSelf: "center" }}
@@ -110,14 +112,14 @@ export default function Settings() {
         </TableRowGroup>
 
         <FormRow
-          label="Sticker Size"
+          label={t("贴纸尺寸", "Sticker Size")}
           trailing={<FormText style={{ opacity: 0.6 }}>{size}</FormText>}
           arrow
           onPress={() => setOpenPicker(openPicker === "sticker" ? null : "sticker")}
         />
         {openPicker === "sticker" && (
           <TableRadioGroup
-            title="Sticker Size"
+            title={t("贴纸尺寸", "Sticker Size")}
             value={size.toString()}
             onChange={v => {
               storage.stickerSize = parseInt(v);
@@ -127,14 +129,14 @@ export default function Settings() {
             {STICKER_SIZES.map(size => (
               <TableRadioRow
                 label={size.toString()}
-                subLabel={size === DEFAULT_STICKER_SIZE ? "Default" : null}
+                subLabel={size === DEFAULT_STICKER_SIZE ? t("默认", "Default") : null}
                 key={size.toString()}
                 value={size.toString()}
               />
             ))}
           </TableRadioGroup>
         )}
-        <TableRowGroup title="Preview">
+        <TableRowGroup title={t("贴纸预览", "Preview")}>
           <Image
             source={{ uri: sampleUrl }}
             style={{ width: previewSize, height: previewSize, borderRadius: 8, alignSelf: "center" }}
